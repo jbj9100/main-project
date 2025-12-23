@@ -1,13 +1,60 @@
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import axios from 'axios'
 import './LoginPage.css'
+
+// 백엔드 API URL (환경에 맞게 수정하세요)
+const API_BASE_URL = 'http://localhost:8000'
 
 function LoginPage() {
     const navigate = useNavigate()
 
-    const handleLogin = (e) => {
+    // 상태 관리
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
+
+    const handleLogin = async (e) => {
         e.preventDefault()
-        // TODO: 백엔드 연동 시 로그인 API 호출
-        navigate('/dashboard')
+        setError('')
+        setLoading(true)
+
+        try {
+            // 백엔드 로그인 API 호출 (axios 사용)
+            const response = await axios.post(`${API_BASE_URL}/api/hub/login/`, {
+                email,
+                password
+            })
+
+            // 로그인 성공
+            console.log('로그인 성공:', response.data)
+
+            // 토큰이 있다면 localStorage에 저장
+            if (response.data.token) {
+                localStorage.setItem('authToken', response.data.token)
+            }
+
+            // 대시보드로 이동
+            navigate('/dashboard')
+
+        } catch (err) {
+            console.error('로그인 에러:', err)
+
+            // axios 에러 처리
+            if (err.response) {
+                // 서버가 응답을 반환한 경우 (4xx, 5xx)
+                setError(err.response.data.message || '로그인에 실패했습니다.')
+            } else if (err.request) {
+                // 요청은 보냈지만 응답을 받지 못한 경우
+                setError('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
+            } else {
+                // 요청 설정 중 에러가 발생한 경우
+                setError('요청 중 오류가 발생했습니다.')
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -35,15 +82,25 @@ function LoginPage() {
                 <div className="login-form-wrapper">
                     <h2 className="login-title">Login</h2>
 
+                    {error && (
+                        <div className="error-message">
+                            {error}
+                        </div>
+                    )}
+
                     <form onSubmit={handleLogin} className="login-form">
                         <div className="form-group">
-                            <label htmlFor="username">Username</label>
+                            <label htmlFor="email">Email</label>
                             <input
-                                type="text"
-                                id="username"
-                                name="username"
+                                type="email"
+                                id="email"
+                                name="email"
                                 className="form-input"
                                 placeholder=""
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                disabled={loading}
                             />
                         </div>
 
@@ -55,6 +112,10 @@ function LoginPage() {
                                 name="password"
                                 className="form-input"
                                 placeholder=""
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                disabled={loading}
                             />
                         </div>
 
@@ -62,13 +123,17 @@ function LoginPage() {
                             <a href="#" className="forgot-password">forgot password?</a>
                         </div>
 
-                        <button type="submit" className="login-button">
-                            Login
+                        <button
+                            type="submit"
+                            className="login-button"
+                            disabled={loading}
+                        >
+                            {loading ? '로그인 중...' : 'Login'}
                         </button>
                     </form>
 
                     <div className="signup-link">
-                        Don't have any account? <a href="#">Create an account</a>
+                        Don't have any account? <Link to="/signup">Create an account</Link>
                     </div>
                 </div>
             </div>

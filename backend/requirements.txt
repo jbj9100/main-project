@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-dotenv
+sqlalchemy[asyncio]
+asyncmy
+cryptography
+pydantic[email]
+redis
+redis_client
+passlib[argon2]
