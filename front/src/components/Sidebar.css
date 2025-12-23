@@ -1,0 +1,136 @@
+.sidebar {
+    width: 260px;
+    background: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-bg {
+    background: linear-gradient(135deg, #4FC3F7 0%, #26C6DA 100%);
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 16px 0;
+}
+
+.menu-item-wrapper {
+    margin-bottom: 4px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.menu-item:hover {
+    background-color: var(--bg-gray-light);
+}
+
+.menu-item.active {
+    background-color: #E8F5F9;
+    border-left: 3px solid var(--primary-teal);
+    color: var(--primary-teal);
+}
+
+.menu-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.menu-label {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.menu-item.active .menu-label {
+    color: var(--primary-teal);
+    font-weight: 600;
+}
+
+.submenu-arrow {
+    font-size: 10px;
+    color: var(--text-gray);
+}
+
+.submenu {
+    background-color: var(--bg-gray-light);
+    padding: 8px 0;
+    margin-left: 24px;
+}
+
+.submenu-item {
+    padding: 10px 24px;
+    font-size: 12px;
+    color: var(--text-gray);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submenu-item:hover {
+    background-color: white;
+    color: var(--text-dark);
+}
+
+/* 스크롤바 스타일 */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--text-gray);
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        transition: left 0.3s;
+        z-index: 100;
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+}
