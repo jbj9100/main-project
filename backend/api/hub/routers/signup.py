@@ -18,7 +18,7 @@ def signup_get():
 @router.post("/")
 async def signup_post(signup: Signup, session: AsyncSession = Depends(get_session)):
     try:
-        user = await signup_user(session, signup.username, signup.email, signup.password)
+        user = await signup_user(session, signup)
         return {"ok": True, "id": user.id, "username": user.username, "email": user.email}
     except HTTPException as e:
         if e.detail == "USERNAME_EXISTS":
