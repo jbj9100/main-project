@@ -1,14 +1,10 @@
 import os 
-from sqlalchemy import create_engine
-from sqlalchemy.pool import QueuePool
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi import HTTPException
 from sqlalchemy import text
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncConnection
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,6 +29,8 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
 )
 
+# get_session()은 요청하나를 session 객체에 담음
+# 그 session을 yield로 반환해서 라우터/서비스 레이어에서 명시적으로 commit/rollback을 함
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """
     FastAPI Depends로 주입해서 쓰는 ORM Session 의존성.
