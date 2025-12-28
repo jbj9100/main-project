@@ -25,6 +25,8 @@ function LoginPage() {
             const response = await axios.post(`${API_BASE_URL}/api/hub/login/`, {
                 email,
                 password
+            }, {
+                withCredentials: true // 쿠키 저장을 위해 필수
             })
 
             // 로그인 성공

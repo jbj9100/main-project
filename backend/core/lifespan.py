@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from db.session import dispose_engine, ping_db
+from db.db_conn import dispose_engine, ping_db
+from db.redis_conn import close_redis, ping_redis
 
 
 
@@ -12,13 +13,12 @@ async def lifespan(app: FastAPI):
         else:
             print("Database connection successful")
 
-        # redis_client = create_redis()
-        # await ping_redis(redis_client)
-
-        # # 앱 전역 상태에 저장
-        # app.state.redis = redis_client
+        if not await ping_redis():
+            raise Exception("Redis connection failed")
+        else:
+            print("Redis connection successful")
 
         yield
     finally:
-        # await close_redis(app.state.redis)
+        await close_redis()
         await dispose_engine()

@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from schemas.user import Signup
 from models.user import User
 from core.password_hash import hash_password
-from db.session import get_session
-from services.db_session import signup_user
+from db.db_conn import get_session
+from services.svc_signup import signup_user
 from fastapi import HTTPException
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession

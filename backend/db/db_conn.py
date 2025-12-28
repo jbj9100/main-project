@@ -32,11 +32,8 @@ AsyncSessionLocal = async_sessionmaker(
 # get_session()은 요청하나를 session 객체에 담음
 # 그 session을 yield로 반환해서 라우터/서비스 레이어에서 명시적으로 commit/rollback을 함
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """
-    FastAPI Depends로 주입해서 쓰는 ORM Session 의존성.
-    - 여기서는 HTTPException 던지지 않음
-    - commit/rollback은 보통 라우터/서비스 레이어에서 명시적으로 함
-    """
+    if engine is None:
+        raise Exception("Database engine not initialized")
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -47,7 +44,6 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def ping_db() -> bool:
-    """startup에서 DB 연결 체크(선택)."""
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))

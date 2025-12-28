@@ -7,6 +7,7 @@ from core.password_hash import hash_password
 from fastapi import HTTPException
 from schemas.user import Signup
 
+# 회원가입으로 DB에 추가하는 작업
 async def signup_user(session: AsyncSession, signup: Signup) -> User:
     # 전달받은 session객체로 작업을 수행
     # AsyncSession은 DB 트랜잭션을 포함한 “작업 단위(Unit of Work)”를 관리하는 객체고,
