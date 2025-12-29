@@ -9,7 +9,7 @@ class Base(DeclarativeBase):
     pass
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(30), unique=True, nullable=False, index=True)

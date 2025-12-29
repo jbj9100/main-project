@@ -1,8 +1,8 @@
 create database main_hub;
 
-drop table if exists user;
+drop table if exists users;
 
-create table user
+create table users
 (id integer auto_increment primary key,
 username varchar(30) unique not null,
 password_hash varchar(255) not null,
@@ -26,4 +26,4 @@ CREATE TABLE `user_sessions` (
     FOREIGN KEY (`user_id`)
     REFERENCES `user`(`id`)
     ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDBa DEFAULT CHARSET=utf8mb4;

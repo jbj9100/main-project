@@ -1,5 +1,4 @@
-from fastapi import APIRouter,Request, HTTPException, Depends , Response
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter,Request, Depends , Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.db_conn import get_session
 from db.redis_conn import get_redis
