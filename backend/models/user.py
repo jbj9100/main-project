@@ -22,7 +22,7 @@ class UserSession(Base):
     __tablename__ = "user_sessions"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)  # cookie의 value값
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), index=True)  # user테이블의 id를 참조
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)  # user테이블의 id를 참조
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)  
     # 로그인 유지 기간으로 이 시간 이후엔 무조건 세션 무효

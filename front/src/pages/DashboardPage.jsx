@@ -15,79 +15,123 @@ const DashboardPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all'); // all, active, archived
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newProject, setNewProject] = useState({ name: '', description: '' });
+    const [editingProject, setEditingProject] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Mock Data Initialization (In real app, fetch from API)
+    // Fetch Projects from Backend API
     useEffect(() => {
-        const mockProjects = [
-            {
-                id: 1,
-                name: 'main_hub',
-                description: 'The central hub for all project management activities. This project coordinates multiple sub-modules.',
-                status: 'active',
-                lastUpdated: '2024-12-28',
-                members: 5
-            },
-            {
-                id: 2,
-                name: 'legacy_system_v1',
-                description: 'Old legacy system maintenance. Currently in read-only mode for historical data access.',
-                status: 'archived',
-                lastUpdated: '2023-11-15',
-                members: 2
-            },
-            {
-                id: 3,
-                name: 'api_gateway',
-                description: 'Gateway service for routing requests to appropriate microservices.',
-                status: 'active',
-                lastUpdated: '2024-12-25',
-                members: 8
-            },
-            {
-                id: 4,
-                name: 'auth_service',
-                description: 'Authentication and authorization service using JWT and OAuth2.',
-                status: 'active',
-                lastUpdated: '2024-12-27',
-                members: 4
-            }
-        ];
-
-        // Simulating API fetch
-        setProjects(mockProjects);
+        fetchProjects();
     }, []);
 
+    const fetchProjects = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/projects`, {
+                withCredentials: true  // 세션 쿠키 포함
+            });
+            setProjects(response.data);
+        } catch (err) {
+            console.error('Failed to fetch projects:', err);
+            setError('프로젝트 목록을 불러오는데 실패했습니다.');
+            // 에러 시 빈 배열로 초기화
+            setProjects([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // --- Actions ---
-    const handleCreateProject = () => {
+    const handleCreateProject = async () => {
         if (!newProject.name) {
             alert('Project Name is required!');
             return;
         }
 
-        const newId = projects.length + 1;
-        const projectToAdd = {
-            id: newId,
-            name: newProject.name,
-            description: newProject.description || 'No description provided.',
-            status: 'active',
-            lastUpdated: new Date().toISOString().split('T')[0],
-            members: 1
-        };
+        setIsLoading(true);
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/api/projects`,
+                {
+                    name: newProject.name,
+                    description: newProject.description || ''
+                },
+                {
+                    withCredentials: true  // 세션 쿠키 포함
+                }
+            );
 
-        setProjects([projectToAdd, ...projects]);
-        setIsModalOpen(false);
-        setNewProject({ name: '', description: '' });
+            // 새로 생성된 프로젝트를 목록 맨 앞에 추가
+            setProjects([response.data, ...projects]);
+            setIsModalOpen(false);
+            setNewProject({ name: '', description: '' });
+        } catch (err) {
+            console.error('Failed to create project:', err);
+            alert('프로젝트 생성에 실패했습니다: ' + (err.response?.data?.detail || err.message));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleDeleteProject = (id) => {
-        if (window.confirm('Are you sure you want to delete this project?')) {
+    const handleDeleteProject = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this project?')) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await axios.delete(`${API_BASE_URL}/api/projects/${id}`, {
+                withCredentials: true  // 세션 쿠키 포함
+            });
+
+            // 삭제 성공 시 목록에서 제거
             setProjects(projects.filter(p => p.id !== id));
+        } catch (err) {
+            console.error('Failed to delete project:', err);
+            alert('프로젝트 삭제에 실패했습니다: ' + (err.response?.data?.detail || err.message));
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleEditProject = (project) => {
-        alert(`Edit feature for "${project.name}" coming soon!`);
+        setEditingProject(project);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateProject = async () => {
+        if (!editingProject.name) {
+            alert('Project Name is required!');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await axios.patch(
+                `${API_BASE_URL}/api/projects/${editingProject.id}`,
+                {
+                    name: editingProject.name,
+                    description: editingProject.description,
+                    status: editingProject.status
+                },
+                {
+                    withCredentials: true  // 세션 쿠키 포함
+                }
+            );
+
+            // 수정된 프로젝트를 목록에서 업데이트
+            setProjects(projects.map(p => p.id === editingProject.id ? response.data : p));
+            setIsEditModalOpen(false);
+            setEditingProject(null);
+        } catch (err) {
+            console.error('Failed to update project:', err);
+            alert('프로젝트 수정에 실패했습니다: ' + (err.response?.data?.detail || err.message));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // --- Filtering Logic ---
@@ -103,6 +147,7 @@ const DashboardPage = () => {
     const activeProjects = projects.filter(p => p.status === 'active').length;
     const totalMembers = projects.reduce((acc, curr) => acc + curr.members, 0);
 
+
     return (
         <div className="dashboard-container">
             {/* 1. Header Section */}
@@ -115,6 +160,20 @@ const DashboardPage = () => {
                     {/* Placeholder for user profile if needed */}
                 </div>
             </div>
+
+            {/* Error Message */}
+            {error && (
+                <div style={{
+                    backgroundColor: '#fee',
+                    color: '#c33',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    border: '1px solid #fcc'
+                }}>
+                    ⚠️ {error}
+                </div>
+            )}
 
             {/* 2. Overview Stats */}
             <div className="stats-container">
@@ -154,28 +213,38 @@ const DashboardPage = () => {
                         <option value="archived">Archived</option>
                     </select>
                 </div>
-                <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+                <button
+                    className="btn-primary"
+                    onClick={() => setIsModalOpen(true)}
+                    disabled={isLoading}
+                >
                     + New Project
                 </button>
             </div>
 
             {/* 4. Project Grid */}
-            <div className="project-grid">
-                {filteredProjects.length > 0 ? (
-                    filteredProjects.map(project => (
-                        <ProjectCard
-                            key={project.id}
-                            project={project}
-                            onEdit={handleEditProject}
-                            onDelete={handleDeleteProject}
-                        />
-                    ))
-                ) : (
-                    <div className="no-results">
-                        <p>No projects found matching your criteria.</p>
-                    </div>
-                )}
-            </div>
+            {isLoading ? (
+                <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#888' }}>
+                    로딩 중...
+                </div>
+            ) : (
+                <div className="project-grid">
+                    {filteredProjects.length > 0 ? (
+                        filteredProjects.map(project => (
+                            <ProjectCard
+                                key={project.id}
+                                project={project}
+                                onEdit={handleEditProject}
+                                onDelete={handleDeleteProject}
+                            />
+                        ))
+                    ) : (
+                        <div className="no-results">
+                            <p>No projects found matching your criteria.</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* 5. Create Project Modal */}
             {isModalOpen && (
@@ -208,7 +277,66 @@ const DashboardPage = () => {
                         </div>
                         <div className="modal-footer">
                             <button className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                            <button className="btn-save" onClick={handleCreateProject}>Create Project</button>
+                            <button
+                                className="btn-save"
+                                onClick={handleCreateProject}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Creating...' : 'Create Project'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 6. Edit Project Modal */}
+            {isEditModalOpen && editingProject && (
+                <div className="modal-overlay" onClick={() => setIsEditModalOpen(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Edit Project</h2>
+                            <button className="close-btn" onClick={() => setIsEditModalOpen(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Project Name <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    value={editingProject.name}
+                                    onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
+                                    placeholder="Enter project name"
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea
+                                    value={editingProject.description}
+                                    onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                                    placeholder="Enter project description"
+                                    rows={3}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Status</label>
+                                <select
+                                    value={editingProject.status}
+                                    onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value })}
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="archived">Archived</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-cancel" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+                            <button
+                                className="btn-save"
+                                onClick={handleUpdateProject}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Updating...' : 'Update Project'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -218,4 +346,5 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
 

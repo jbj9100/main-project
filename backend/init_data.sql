@@ -24,6 +24,6 @@ CREATE TABLE `user_sessions` (
 
   CONSTRAINT `fk_user_sessions_user`
     FOREIGN KEY (`user_id`)
-    REFERENCES `user`(`id`)
+    REFERENCES `users`(`id`)
     ON DELETE CASCADE
-) ENGINE=InnoDBa DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
